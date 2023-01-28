@@ -256,6 +256,7 @@ class pathPlanner():
         return w_out        
         
     def start(self):
+        pos_1 = np.zeros([3,1])
         while not rospy.is_shutdown():
             # Drone's global Position and Orientation
             flag = True
@@ -274,9 +275,10 @@ class pathPlanner():
             # rospy.loginfo('Plane normal: %s', self.n)
             
             # Project Drone 3D position to 2D
-            # rospy.loginfo('Position 3D pre-Projection: %s', pos)
-            projPos3D = self.projectVec2Plane(pos,self.n)
-            # rospy.loginfo('Position 3D post-projection: %s', projPos3D)
+            rG = pos - pos_1
+            r_drone = np.matmul(np.transpose(rot),rG)
+            projPos3D = self.projectVec2Plane(r_drone,self.n)
+            pos_1 = pos
             
             # Project velocities 2D --> 3D local
             if self.firstTime:
