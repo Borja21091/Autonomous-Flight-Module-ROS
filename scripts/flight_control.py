@@ -56,13 +56,12 @@ class SensorMount(object):
         
         self.Points = np.array([lSensorPoint, fSensorPoint, rSensorPoint])
         
-        
     def transform_measurement(self,sensor):
-        # Move sensor data to common reference frame "sensor_mount"
+        # Move sensor data to common reference frame "base_link"
         while not sensor.frame:
             rospy.loginfo('Sensor Frame: %s', sensor.frame)
 
-        TFSensor = self.tfBuffer.lookup_transform(sensor.frame, 'sensor_mount', rospy.Time(0))
+        TFSensor = self.tfBuffer.lookup_transform(sensor.frame, 'base_link', rospy.Time(0))
         # Extract transformation
         p = np.array([TFSensor.transform.translation.x, TFSensor.transform.translation.y, TFSensor.transform.translation.z])
         q = np.array([TFSensor.transform.rotation.x, TFSensor.transform.rotation.y,
@@ -157,13 +156,14 @@ class pathPlanner():
         # self.vPlanarCtrl = PID(0.01,0.1,0.025) # 2D velocity estimation + correction
         self.vPlanarCtrl = PID(0.05,0.05,0.1) # 2D velocity estimation + correction
         self.rotZCtrl = PID(0.1,0.1,0.0) # Z axis rotation control
-        self.vx3DCtrl = PID(-0.025,-0.1,0.0) # 3D forward velocity control
+        # self.vx3DCtrl = PID(-0.025,-0.1,0.0) # 3D forward velocity control
+        self.vx3DCtrl = PID(-0.1,-0.1,0.0) # 3D forward velocity control
         self.refDist = 1 # 1 metres target distance drone - wall
         
         # Raster trajectory parameters
-        self.radius = 0.2
-        self.Nturns = 3.0
-        self.sideLength = 0.5
+        self.radius = 0.1
+        self.Nturns = 4.0
+        self.sideLength = 0.6
         self.firstTime = True
 
         # Initialize trajectory and project
