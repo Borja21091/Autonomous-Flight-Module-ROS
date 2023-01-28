@@ -278,7 +278,7 @@ class pathPlanner():
             rG = pos - pos_1
             r_drone = np.matmul(np.transpose(rot),rG)
             projPos3D = self.projectVec2Plane(r_drone,self.n)
-            pos_1 = pos
+            pos_1 = np.copy(pos)
             
             # Project velocities 2D --> 3D local
             if self.firstTime:
