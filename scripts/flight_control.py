@@ -274,7 +274,7 @@ class pathPlanner():
             self.n,self.D = self.fitNormalVec(rot)
             # rospy.loginfo('Plane normal: %s', self.n)
             
-            # Project Drone 3D position to 2D
+            # Project Drone 3D (base_link) position to 2D
             rG = pos - pos_1
             r_drone = np.matmul(np.transpose(rot),rG)
             projPos3D = self.projectVec2Plane(r_drone,self.n)
