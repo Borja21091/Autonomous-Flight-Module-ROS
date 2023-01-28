@@ -1,0 +1,32 @@
+<launch>
+
+        <!-- Publish Fake GPS data from Vicon >
+        <node pkg="defect_detect" name="Fake_location" type="vicon2drone.py" /-->
+
+        <!-- Launch Ranging Sensors -->
+        <include file="$(find teraranger)/launch/ranging_sensors.launch"/>
+
+        <!-- Handle TFs -->
+        <!-- Map = Vicon World -->
+        <node pkg="tf2_ros" type="static_transform_publisher" name="map2Vicon" args="0 0 0 0 0 0 1 map vicon/world" /> 
+        <!-- base_link = Vicon SUI_Endurance -->
+        <node pkg="tf2_ros" type="static_transform_publisher" name="baseLink2SUI" args="0 0 0 0 0 0 1 vicon/SUI_Endurance/SUI_Endurance base_link" />
+        <!-- Sensor Mount = base_link + (0.17,0,0) -> Closer to the nose of the drone -->
+        <node pkg="tf2_ros" type="static_transform_publisher" name="sensorMount2baseLink" args="0.17 0 0 0 0 0 1 base_link sensor_mount" />
+        <!-- Sensors ~~ Sensor Mount -->
+        <node pkg="tf2_ros" type="static_transform_publisher" name="leftSensor2sensorMount" args="0.055494 0.053929 -0.059784 0.2617993878 0 0  sensor_mount left_sensor" />
+        <node pkg="tf2_ros" type="static_transform_publisher" name="frontSensor2sensorMount" args="0.041914 0 -0.029686 0 -0.2617993878 0 sensor_mount front_sensor" />
+        <node pkg="tf2_ros" type="static_transform_publisher" name="rightSensor2sensorMount" args="0.055494 -0.053929 -0.059784 -0.2617993878 0 0 sensor_mount right_sensor" />
+
+        <!-- Change flight mode to GUIDED >
+        <node pkg="mavros" name="change_flightmode" type="mavsys">
+            <param name="mode" value="-c GUIDED"/>
+        </node-->
+
+        <!-- Path following algorithm -->
+        <node pkg="defect_detect" name="follow_path" type="flight_control.py" />
+
+        <!-- Handle TFs >
+        <node pkg="defect_detect" name="trajectory0_tf" type="handle_tf.py" /-->
+
+</launch>
