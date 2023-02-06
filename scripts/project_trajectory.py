@@ -96,9 +96,6 @@ class project_trajectory(object):
             # Distance between trajectory and real projected drone position
             errorProj[0] = xTraj[0] - xProj[0]
             errorProj[1] = xTraj[1] - xProj[1]
-            # Accumulation of position error
-            sErrorProj[0] += errorProj[0]
-            sErrorProj[1] += errorProj[1]
             # Derivative of the distance at t
             DC = np.matmul(np.transpose(errorProj),dxTraj)
             # Update trajectory parameter t according to gradient
@@ -107,6 +104,10 @@ class project_trajectory(object):
                 # Make t always positive
                 self.t = -self.t
 
+        # Accumulation of position error
+        sErrorProj[0] += errorProj[0]
+        sErrorProj[1] += errorProj[1]
+            
         # Update parameter t global
         self.t_i = self.t
         self.projection = xProj
