@@ -277,33 +277,27 @@ class pathPlanner():
             # Project Drone 3D (base_link) position to 2D
             rG = pos - pos_1
             r_drone = np.matmul(np.transpose(rot),rG)
-            projPos3D = self.projectVec2Plane(r_drone,self.n)
+            rProj = self.projectVec2Plane(r_drone,self.n)
             pos_1 = np.copy(pos)
             
             # Project velocities 2D --> 3D local
-            if self.firstTime:
-                pos0 = projPos3D # pos
-                self.proj.projVelFirstTime(pos0)
-                self.firstTime = False
-
-            else:
-                # Linear Velocity
-                velParam = np.empty([3,1])
-                velParam = self.proj.projVel(projPos3D)
-                self.vel_output[0] = self.distance_control()
-                self.vel_output[1] = velParam[1,0]
-                self.vel_output[2] = velParam[2,0]
-                self.vel_output = self.drone.v_max*self.vel_output / np.linalg.norm(self.vel_output)
-                # Angular Velocity
-                self.w_z = self.rotation_control()
-                self.w_z = min(max(-self.drone.w_max, self.w_z),self.drone.w_max)
-                rospy.loginfo('Rotation target: %s', self.w_z)
-                if self.proj.t_i > self.proj.t_end:
-                    self.vel_output[0] = 0.0
-                    self.vel_output[1] = 0.0
-                    self.vel_output[2] = 0.0
-                    self.w_z = 0.0
-                    rospy.loginfo("Stopping Motion")
+            # Linear Velocity
+            velParam = np.empty([3,1])
+            velParam = self.proj.projVel(rProj)
+            self.vel_output[0] = self.distance_control()
+            self.vel_output[1] = velParam[1,0]
+            self.vel_output[2] = velParam[2,0]
+            self.vel_output = self.drone.v_max*self.vel_output / np.linalg.norm(self.vel_output)
+            # Angular Velocity
+            self.w_z = self.rotation_control()
+            self.w_z = min(max(-self.drone.w_max, self.w_z),self.drone.w_max)
+            rospy.loginfo('Rotation target: %s', self.w_z)
+            if self.proj.t_i > self.proj.t_end:
+                self.vel_output[0] = 0.0
+                self.vel_output[1] = 0.0
+                self.vel_output[2] = 0.0
+                self.w_z = 0.0
+                rospy.loginfo("Stopping Motion")
                     
             # Merge local velocities to Twist ROS msg
             self.merge2Twist(self.drone.vel,self.vel_output,self.w_z)

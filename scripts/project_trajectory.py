@@ -34,6 +34,8 @@ class project_trajectory(object):
         self.Cv = Cv
         # Integral of error for controller
         self.sErrorProj = np.zeros([2,1])
+        # Planar position
+        self.xProj = np.zeros([2,1])
         
         # Publisher
         self.drone2D_pub = rospy.Publisher('drone2D', PointStamped, queue_size = 10)
@@ -78,10 +80,10 @@ class project_trajectory(object):
         alpha = 0.3
 
         # Project global drone prosition and subtract reference point (origin of parametric trajectory)
-        xProj = np.matmul(self.projection_matrix,pos) - self.x_proj_ref
+        self.xProj += np.matmul(self.projection_matrix,pos)
         
         # Publish 2D projected position
-        self.publish_dronePos_2D(xProj)
+        self.publish_dronePos_2D(self.xProj)
 
         # Loop to find closest point in trajectory to real projected position
         xTraj = np.empty([2,1])
@@ -96,8 +98,8 @@ class project_trajectory(object):
             # Get derivative for given t
             dxTraj = self.traj.dpos(self.t)
             # Distance between trajectory and real projected drone position
-            errorProj[0] = xTraj[0] - xProj[0]
-            errorProj[1] = xTraj[1] - xProj[1]
+            errorProj[0] = xTraj[0] - self.xProj[0]
+            errorProj[1] = xTraj[1] - self.xProj[1]
             # Derivative of the distance at t
             DC = np.matmul(np.transpose(errorProj),dxTraj)
             # Update trajectory parameter t according to gradient
@@ -115,7 +117,7 @@ class project_trajectory(object):
             
         # Update parameter t global
         self.t_i = self.t
-        self.projection = xProj
+        self.projection = self.xProj
         self.trajectory = xTraj
 
         # Compute planar velocity
