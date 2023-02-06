@@ -5,7 +5,7 @@ from nav_msgs.msg import Path
 from geometry_msgs.msg import PoseStamped, PointStamped
 import math
 import numpy as np
-from numpy.linalg import inv
+from numpy.linalg import inv,norm
 
 class project_trajectory(object):
     def __init__(self,parametric_curve,KP,KD,KI,Cv):
@@ -32,6 +32,8 @@ class project_trajectory(object):
         self.KI = KI
         # Maximum tangential velocity
         self.Cv = Cv
+        # Integral of error for controller
+        self.sErrorProj = np.zeros([2,1])
         
         # Publisher
         self.drone2D_pub = rospy.Publisher('drone2D', PointStamped, queue_size = 10)
@@ -105,8 +107,11 @@ class project_trajectory(object):
                 self.t = -self.t
 
         # Accumulation of position error
-        sErrorProj[0] += errorProj[0]
-        sErrorProj[1] += errorProj[1]
+        if norm(errorProj) < 0.01:
+            # Reset
+            self.sErrorProj = np.zeros([2,1])
+        else:
+            self.sErrorProj += errorProj
             
         # Update parameter t global
         self.t_i = self.t
