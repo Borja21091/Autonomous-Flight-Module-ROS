@@ -98,8 +98,7 @@ class project_trajectory(object):
             # Get derivative for given t
             dxTraj = self.traj.dpos(self.t)
             # Distance between trajectory and real projected drone position
-            errorProj[0] = xTraj[0] - self.xProj[0]
-            errorProj[1] = xTraj[1] - self.xProj[1]
+            errorProj = xTraj - self.xProj
             # Derivative of the distance at t
             DC = np.matmul(np.transpose(errorProj),dxTraj)
             # Update trajectory parameter t according to gradient
