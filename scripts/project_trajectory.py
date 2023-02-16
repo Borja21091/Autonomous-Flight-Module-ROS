@@ -89,7 +89,6 @@ class project_trajectory(object):
         xTraj = np.empty([2,1])
         dxTraj = np.empty([2,1])
         errorProj = np.empty([2,1])
-        sErrorProj = np.zeros([2,1])
 
         while (abs(DC) > 0.001 and count < 50):
             count = count + 1
