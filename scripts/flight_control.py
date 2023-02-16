@@ -142,6 +142,7 @@ class pathPlanner():
         # Params
         self.loop_rate = rospy.Rate(10)
         self.vel_output = np.array([0.0, 0.0, 0.0])
+        self.vel_output_global = np.array([0.0, 0.0, 0.0])
         self.w_z = 0.0
         
         # Initialize drone object
@@ -161,9 +162,9 @@ class pathPlanner():
         self.refDist = 1 # 1 metres target distance drone - wall
         
         # Raster trajectory parameters
-        self.radius = 0.1
-        self.Nturns = 4.0
-        self.sideLength = 0.6
+        self.radius = 0.2
+        self.Nturns = 3.0
+        self.sideLength = 0.3
         self.firstTime = True
 
         # Initialize trajectory and project
@@ -177,8 +178,8 @@ class pathPlanner():
             rot = self.drone.get_rotation()
             if not(np.array_equal(rot,np.identity(3))):
                 flag = False
-        axis1 = np.array([0.0, -1.0, 0.0]) # 'axis1' -> horizontal axis in 2D // np.array([world_x_axis_3D, world_y_axis_3D, world_z_axis_3D]) is it 'world' really? Or could ir be any other 3D axes?
-        axis2 = np.array([0.0, 0.0, 1.0]) # 'axis2' -> vertical axis in 2D // np.array([world_x_axis_3D, world_y_axis_3D, world_z_axis_3D])
+        axis1 = np.array([0.0, -1.0, 0.0]) # 'axis1' -> horizontal axis in 2D // np.array([local_x_axis_3D, local_y_axis_3D, local_z_axis_3D]) is it 'world' really? Or could ir be any other 3D axes?
+        axis2 = np.array([0.0, 0.0, 1.0]) # 'axis2' -> vertical axis in 2D // np.array([local_x_axis_3D, local_y_axis_3D, local_z_axis_3D])
 
         # Generate trajectory
         self.proj.generate(axis1,axis2)
@@ -276,6 +277,10 @@ class pathPlanner():
             
             # Project Drone 3D (base_link) position to 2D
             rG = pos - pos_1
+            if self.firstTime:
+                rG = np.zeros([3,1])
+                self.firstTime = False
+            rospy.loginfo('rG: %s', rG)
             r_drone = np.matmul(np.transpose(rot),rG)
             rProj = self.projectVec2Plane(r_drone,self.n)
             pos_1 = np.copy(pos)
@@ -287,20 +292,22 @@ class pathPlanner():
             self.vel_output[0] = self.distance_control()
             self.vel_output[1] = velParam[1,0]
             self.vel_output[2] = velParam[2,0]
-            self.vel_output = self.drone.v_max*self.vel_output / np.linalg.norm(self.vel_output)
+            # cmd_vel commands NEED to be in global frame
+            self.vel_output_global = np.matmul(rot,self.vel_output)
+            self.vel_output_global = self.drone.v_max*self.vel_output_global / np.linalg.norm(self.vel_output_global)
             # Angular Velocity
             self.w_z = self.rotation_control()
             self.w_z = min(max(-self.drone.w_max, self.w_z),self.drone.w_max)
             rospy.loginfo('Rotation target: %s', self.w_z)
             if self.proj.t_i > self.proj.t_end:
-                self.vel_output[0] = 0.0
-                self.vel_output[1] = 0.0
-                self.vel_output[2] = 0.0
+                self.vel_output_global[0] = 0.0
+                self.vel_output_global[1] = 0.0
+                self.vel_output_global[2] = 0.0
                 self.w_z = 0.0
                 rospy.loginfo("Stopping Motion")
                     
             # Merge local velocities to Twist ROS msg
-            self.merge2Twist(self.drone.vel,self.vel_output,self.w_z)
+            self.merge2Twist(self.drone.vel,self.vel_output_global,self.w_z)
             
             # Publish msg to /mavros/setpoint_velocity/cmd_vel
             self.drone.pub.publish(self.drone.vel)
