@@ -121,18 +121,15 @@ class project_trajectory(object):
 
         # Compute planar velocity
         vProj = np.empty([2,1])
-        vProj = self.KD*dxTraj + self.KP*errorProj + self.KI*sErrorProj
+        vProj = self.KD*dxTraj + self.KP*errorProj + self.KI*self.sErrorProj
 
-        # Transform planar velocity to Global space
-        vGlobal = np.empty([3,1])
-        vGlobal = np.matmul(self.inv_projection_matrix,vProj)
-        
-        # Norm of the planar velocity
-        vGlobal_norm = np.linalg.norm(vGlobal)
+        # Transform planar velocity to drone local frame space
+        vLocal = np.empty([3,1])
+        vLocal = np.matmul(self.inv_projection_matrix,vProj)
         
         # Normalization to have constant tangential velocity of C_v
-        if vGlobal_norm > self.Cv:
-            vGlobal *= self.Cv/vGlobal_norm
+        if norm(vLocal) > self.Cv:
+            vLocal *= self.Cv / norm(vLocal)
         
         """# Transform global to local (vicon drone frame) velocity
         # vLocal = np.empty([2,1])
@@ -146,7 +143,7 @@ class project_trajectory(object):
         if vLocal_norm > 0.0:
             vLocal *= self.Cv/vLocal_norm"""
 
-        return vGlobal
+        return vLocal
 
 class raster(object):
     def __init__(self,turnWidth,turns,sideLength):
