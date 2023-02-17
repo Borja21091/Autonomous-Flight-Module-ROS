@@ -282,7 +282,7 @@ class pathPlanner():
                 self.rG = np.zeros([3,1])
                 self.firstTime = False
             rospy.loginfo('rG: %s', self.rG)
-            r_drone = np.matmul(np.transpose(rot),rG)
+            r_drone = np.matmul(np.transpose(rot),self.rG)
             rProj = self.projectVec2Plane(r_drone,self.n)
             pos_1 = np.copy(pos)
             
