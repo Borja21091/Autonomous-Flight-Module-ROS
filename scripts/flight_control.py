@@ -143,6 +143,7 @@ class pathPlanner():
         self.loop_rate = rospy.Rate(10)
         self.vel_output = np.array([0.0, 0.0, 0.0])
         self.vel_output_global = np.array([0.0, 0.0, 0.0])
+        self.rG = np.zeros([3,1])
         self.w_z = 0.0
         
         # Initialize drone object
@@ -276,11 +277,11 @@ class pathPlanner():
             # rospy.loginfo('Plane normal: %s', self.n)
             
             # Project Drone 3D (base_link) position to 2D
-            rG = pos - pos_1
+            self.rG = pos - pos_1
             if self.firstTime:
-                rG = np.zeros([3,1])
+                self.rG = np.zeros([3,1])
                 self.firstTime = False
-            rospy.loginfo('rG: %s', rG)
+            rospy.loginfo('rG: %s', self.rG)
             r_drone = np.matmul(np.transpose(rot),rG)
             rProj = self.projectVec2Plane(r_drone,self.n)
             pos_1 = np.copy(pos)
