@@ -282,6 +282,8 @@ class pathPlanner():
                 self.rG = np.zeros([3,1])
                 self.firstTime = False
             rospy.loginfo('rG: %s', self.rG)
+            rospy.loginfo('Normal vec: %s', self.n)
+            rospy.loginfo('Rot Matrix: %s', rot)
             r_drone = np.matmul(np.transpose(rot),self.rG)
             rProj = self.projectVec2Plane(r_drone,self.n)
             pos_1 = np.copy(pos)
