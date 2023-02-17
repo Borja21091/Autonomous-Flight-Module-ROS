@@ -24,7 +24,7 @@
         </node-->
 
         <!-- Path following algorithm -->
-        <node pkg="defect_detect" name="follow_path" type="flight_control.py" />
+        <node pkg="defect_detect" name="follow_path" type="new_flight_control.py" />
 
         <!-- Handle TFs >
         <node pkg="defect_detect" name="trajectory0_tf" type="handle_tf.py" /-->

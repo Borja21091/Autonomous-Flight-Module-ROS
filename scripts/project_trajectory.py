@@ -80,7 +80,8 @@ class project_trajectory(object):
         alpha = 0.3
 
         # Project global drone prosition and subtract reference point (origin of parametric trajectory)
-        self.xProj += np.matmul(self.projection_matrix,pos)
+        self.xProj -= np.matmul(self.projection_matrix,pos)
+        rospy.loginfo('2D Position: %s', self.xProj)
         
         # Publish 2D projected position
         self.publish_dronePos_2D(self.xProj)
@@ -105,7 +106,7 @@ class project_trajectory(object):
             if self.t < 0.0:
                 # Make t always positive
                 self.t = -self.t
-
+        rospy.loginfo('2D Target: %s', xTraj)
         # Accumulation of position error
         if norm(errorProj) < 0.01:
             # Reset
@@ -121,7 +122,8 @@ class project_trajectory(object):
         # Compute planar velocity
         vProj = np.empty([2,1])
         vProj = self.KD*dxTraj + self.KP*errorProj + self.KI*self.sErrorProj
-
+        rospy.loginfo('2D Taget Vel: %s', vProj)
+        
         # Transform planar velocity to drone local frame space
         vLocal = np.empty([3,1])
         vLocal = np.matmul(self.inv_projection_matrix,vProj)

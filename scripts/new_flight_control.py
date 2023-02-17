@@ -160,12 +160,12 @@ class pathPlanner():
         self.rotZCtrl = PID(0.1,0.1,0.0) # Z axis rotation control
         # self.vx3DCtrl = PID(-0.025,-0.1,0.0) # 3D forward velocity control
         self.vx3DCtrl = PID(-0.1,-0.1,0.0) # 3D forward velocity control
-        self.refDist = 1 # 1 metres target distance drone - wall
+        self.refDist = 0.9 # 0.8 metres target distance drone - wall
         
         # Raster trajectory parameters
         self.radius = 0.2
         self.Nturns = 3.0
-        self.sideLength = 0.3
+        self.sideLength = 0.4
         self.firstTime = True
 
         # Initialize trajectory and project
@@ -197,8 +197,8 @@ class pathPlanner():
         x1, y1, z1 = p1
         x2, y2, z2 = p2
         # Vectors that form a plane
-        ux, uy, uz = u = [x1-x0, y1-y0, z1-z0]
-        vx, vy, vz = v = [x2-x0, y2-y0, z2-z0]
+        ux, uy, uz = [x1-x0, y1-y0, z1-z0]
+        vx, vy, vz = [x2-x0, y2-y0, z2-z0]
         # Calculate normal and D
         u_cross_v = np.array([[uy*vz-uz*vy], [uz*vx-ux*vz], [ux*vy-uy*vx]])
         point  = np.array(p0)
@@ -282,10 +282,11 @@ class pathPlanner():
                 self.rG = np.zeros([3,1])
                 self.firstTime = False
             rospy.loginfo('rG: %s', self.rG)
-            rospy.loginfo('Normal vec: %s', self.n)
-            rospy.loginfo('Rot Matrix: %s', rot)
+            # rospy.loginfo('Normal vec: %s', self.n)
+            # rospy.loginfo('Rot Matrix: %s', rot)
             r_drone = np.matmul(np.transpose(rot),self.rG)
             rProj = self.projectVec2Plane(r_drone,self.n)
+            rospy.loginfo('Projected rG: %s', rProj)
             pos_1 = np.copy(pos)
             
             # Project velocities 2D --> 3D local
@@ -293,11 +294,13 @@ class pathPlanner():
             velParam = np.empty([3,1])
             velParam = self.proj.projVel(rProj)
             self.vel_output[0] = self.distance_control()
-            self.vel_output[1] = velParam[1,0]
-            self.vel_output[2] = velParam[2,0]
+            self.vel_output[1] = -velParam[1,0]
+            self.vel_output[2] = -velParam[2,0]
+            rospy.loginfo('Target Local Vel: %s', self.vel_output)
             # cmd_vel commands NEED to be in global frame
             self.vel_output_global = np.matmul(rot,self.vel_output)
             self.vel_output_global = self.drone.v_max*self.vel_output_global / np.linalg.norm(self.vel_output_global)
+            # rospy.loginfo('Target Global Vel: %s', self.vel_output_global)
             # Angular Velocity
             self.w_z = self.rotation_control()
             self.w_z = min(max(-self.drone.w_max, self.w_z),self.drone.w_max)
