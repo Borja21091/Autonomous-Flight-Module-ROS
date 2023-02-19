@@ -226,7 +226,7 @@ class pathPlanner():
         
     def merge2Twist(self,msgTwist,vel,w):
         # Message header frame_id
-        msgTwist.header.frame_id = 'base_link'
+        msgTwist.header.frame_id = 'vicon_world'
         msgTwist.header.stamp = rospy.Time.now()
         # Message linear velocities
         msgTwist.twist.linear.x = vel[0] # Positive value --> To the front on vicon global
