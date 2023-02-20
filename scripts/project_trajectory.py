@@ -80,7 +80,7 @@ class project_trajectory(object):
         alpha = 0.3
 
         # Project global drone prosition and subtract reference point (origin of parametric trajectory)
-        self.xProj -= np.matmul(self.projection_matrix,pos)
+        self.xProj += np.matmul(self.projection_matrix,pos)
         rospy.loginfo('2D Position: %s', self.xProj)
         
         # Publish 2D projected position
