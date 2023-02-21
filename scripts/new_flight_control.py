@@ -46,7 +46,8 @@ class SensorMount(object):
         self.listener = tf2_ros.TransformListener(self.tfBuffer)
 
         # Publishers
-        self.distance = rospy.Publisher('distance', Range, queue_size = 10)
+        self.distance = rospy.Publisher('distance',Range,queue_size = 10)
+        self.normal = rospy.Publisher('normal',Point,queue_size = 10)
         
     def calculate_distance(self):
         # Transform distances to 3D points (reference frame 'sensor_mount')
@@ -60,8 +61,8 @@ class SensorMount(object):
         # Move sensor data to common reference frame "base_link"
         while not sensor.frame:
             rospy.loginfo('Sensor Frame: %s', sensor.frame)
-
-        TFSensor = self.tfBuffer.lookup_transform(sensor.frame, 'base_link', rospy.Time(0))
+            
+        TFSensor = self.tfBuffer.lookup_transform(sensor.frame,'base_link', rospy.Time(0))
         # Extract transformation
         p = np.array([TFSensor.transform.translation.x, TFSensor.transform.translation.y, TFSensor.transform.translation.z])
         q = np.array([TFSensor.transform.rotation.x, TFSensor.transform.rotation.y,
@@ -92,7 +93,7 @@ class Drone(object):
         self.pos2D = np.zeros([2,1])
 
         # Max speeds [m/s] & [rad/s]
-        self.v_max = 0.1
+        self.v_max = 0.05
         self.w_max = 0.26 # ~15 degrees/s
         
         # Sensor Mount
@@ -157,16 +158,16 @@ class pathPlanner():
         
         # Initialize Controllers
         # self.vPlanarCtrl = PID(0.01,0.1,0.025) # 2D velocity estimation + correction
-        self.vPlanarCtrl = PID(0.05,0.05,0.1) # 2D velocity estimation + correction
+        self.vPlanarCtrl = PID(0.05,0.1,0.1) # 2D velocity estimation + correction
         self.rotZCtrl = PID(0.1,0.1,0.0) # Z axis rotation control
         # self.vx3DCtrl = PID(-0.025,-0.1,0.0) # 3D forward velocity control
         self.vx3DCtrl = PID(-0.1,-0.1,0.0) # 3D forward velocity control
         self.refDist = 0.85 # 0.9 metres target distance drone - wall
         
         # Raster trajectory parameters
-        self.radius = 0.2
-        self.Nturns = 4.0
-        self.sideLength = 0.4
+        self.radius = 0.15
+        self.Nturns = 3.0
+        self.sideLength = 0.6
         self.firstTime = True
 
         # Initialize trajectory and project
@@ -209,11 +210,12 @@ class pathPlanner():
         msgRange = Range()
         msgRange.range = d
         self.drone.sensor_mount.distance.publish(msgRange)
-        
-        """# Rotation matrix from normal vector --> https://math.stackexchange.com/questions/1956699/getting-a-transformation-matrix-from-a-normal-vector
-        u1 = np.cross(normal,[0,0,1]); u1 = u1/np.linalg.norm(u1)
-        u2 = np.cross(normal,u1); u2 = u2/np.linalg.norm(u2)
-        R = np.array(u1,u2,normal)"""
+        # Publish normal vector
+        msgNormal = Point()
+        msgNormal.x = normal[0]
+        msgNormal.y = normal[1]
+        msgNormal.z = normal[2]
+        self.drone.sensor_mount.normal.publish(msgNormal)
         
         return normal,d
         
@@ -284,11 +286,11 @@ class pathPlanner():
                 self.firstTime = False
             # rospy.loginfo('Normal vec: %s', self.n)
             # rospy.loginfo('Rot Matrix: %s', rot)
-            rospy.loginfo('Rotation Matrix: %s', rot)
+            # rospy.loginfo('Rotation Matrix: %s', rot)
             r_drone = np.matmul(np.transpose(rot),self.rG)
-            rospy.loginfo('r_drone: %s', r_drone)
+            # rospy.loginfo('r_drone: %s', r_drone)
             rProj = self.projectVec2Plane(r_drone,self.n)
-            rospy.loginfo('Projected r_drone: %s', rProj)
+            # rospy.loginfo('Projected r_drone: %s', rProj)
             pos_1 = np.copy(pos)
             
             # Project velocities 2D --> 3D local
@@ -298,21 +300,21 @@ class pathPlanner():
             self.vel_output[0] = self.distance_control()
             self.vel_output[1] = velParam[1,0]
             self.vel_output[2] = velParam[2,0]
-            rospy.loginfo('Target Local Vel: %s', self.vel_output)
+            # rospy.loginfo('Target Local Vel: %s', self.vel_output)
             # cmd_vel commands NEED to be in Vicon Global frame
             self.vel_output_global = np.matmul(rot,self.vel_output)
             self.vel_output_global = self.drone.v_max*self.vel_output_global / np.linalg.norm(self.vel_output_global)
-            rospy.loginfo('Target Global Vel: %s', self.vel_output_global)
+            # rospy.loginfo('Target Global Vel: %s', self.vel_output_global)
             # Angular Velocity
             self.w_z = self.rotation_control()
             self.w_z = min(max(-self.drone.w_max, self.w_z),self.drone.w_max)
-            rospy.loginfo('Rotation target: %s', self.w_z)
+            # rospy.loginfo('Rotation target: %s', self.w_z)
             if self.proj.t_i > self.proj.t_end:
                 self.vel_output_global[0] = 0.0
                 self.vel_output_global[1] = 0.0
                 self.vel_output_global[2] = 0.0
                 self.w_z = 0.0
-                rospy.loginfo("Stopping Motion")
+                # rospy.loginfo("Stopping Motion")
                     
             # Merge local velocities to Twist ROS msg
             self.merge2Twist(self.drone.vel,self.vel_output_global,-self.w_z)
