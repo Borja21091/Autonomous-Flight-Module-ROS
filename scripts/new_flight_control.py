@@ -158,16 +158,16 @@ class pathPlanner():
         
         # Initialize Controllers
         # self.vPlanarCtrl = PID(0.01,0.1,0.025) # 2D velocity estimation + correction
-        self.vPlanarCtrl = PID(0.05,0.1,0.1) # 2D velocity estimation + correction
-        self.rotZCtrl = PID(0.1,0.1,0.0) # Z axis rotation control
+        self.vPlanarCtrl = PID(0.05,0.025,0.1) # 2D velocity estimation + correction
+        self.rotZCtrl = PID(1,1,0.0) # Z axis rotation control
         # self.vx3DCtrl = PID(-0.025,-0.1,0.0) # 3D forward velocity control
-        self.vx3DCtrl = PID(-0.1,-0.1,0.0) # 3D forward velocity control
-        self.refDist = 0.85 # 0.9 metres target distance drone - wall
+        self.vx3DCtrl = PID(-0.5,-0.1,0.0) # 3D forward velocity control
+        self.refDist = 0.9 # 0.9 metres target distance drone - wall
         
         # Raster trajectory parameters
-        self.radius = 0.15
-        self.Nturns = 3.0
-        self.sideLength = 0.6
+        self.radius = 0.3
+        self.Nturns = 2.0
+        self.sideLength = 0.5
         self.firstTime = True
 
         # Initialize trajectory and project

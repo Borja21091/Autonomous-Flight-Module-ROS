@@ -108,7 +108,7 @@ class project_trajectory(object):
                 self.t = -self.t
         # rospy.loginfo('2D Target: %s', xTraj)
         # Accumulation of position error
-        if norm(errorProj) < 0.1:
+        if norm(errorProj) < 0.05:
             # Reset
             self.sErrorProj = np.zeros([2,1])
         else:
@@ -207,18 +207,30 @@ class raster(object):
 
         # Straight direction 1
         if L_left < (self.H - 0.5*self.V):
+            # Vertical
             x[0,0] = N_c*self.V
             x[1,0] = sig*L_left
+            # Horizontal
+            # x[1,0] = N_c*self.V
+            # x[0,0] = sig*L_left
 
         # Turning
         elif L_left < (self.H + 0.5*(math.pi - 1.0)*self.V):
+            # Vertical
             x[0,0] = (N_c + 0.5)*self.V + 0.5*self.V*math.sin(sig*(L_left - self.H + 0.5*self.V)*2.0/self.V - 0.5*math.pi)
             x[1,0] = sig*(self.H - 0.5*self.V) + 0.5*self.V*math.cos(sig*(L_left - self.H + 0.5*self.V)*2.0/self.V - 0.5*math.pi)
+            # Horizontal
+            # x[1,0] = (N_c + 0.5)*self.V + 0.5*self.V*math.sin(sig*(L_left - self.H + 0.5*self.V)*2.0/self.V - 0.5*math.pi)
+            # x[0,0] = sig*(self.H - 0.5*self.V) + 0.5*self.V*math.cos(sig*(L_left - self.H + 0.5*self.V)*2.0/self.V - 0.5*math.pi)
 
         # Straight direction 2
         else:
+            # Vertical
             x[0,0] = (N_c + 1)*self.V
             x[1,0] = sig*(2.0*self.H + (0.5*math.pi - 1.0)*self.V - L_left)
+            # Horizontal
+            # x[1,0] = (N_c + 1)*self.V
+            # x[0,0] = sig*(2.0*self.H + (0.5*math.pi - 1.0)*self.V - L_left)
 
         return x
         
@@ -238,15 +250,27 @@ class raster(object):
         dx = np.empty([2, 1])
 
         if L_left < (self.H - 0.5*self.V):
+            # Vertical
             dx[0,0] = 0.0
             dx[1,0] = sig
+            # Horizontal
+            # dx[1,0] = 0.0
+            # dx[0,0] = sig
 
         elif L_left < (self.H + 0.5*(math.pi - 1.0)*self.V):
+            # Vertical
             dx[0,0] = sig*math.cos(sig*(L_left - self.H + 0.5*self.V)*2.0/self.V - 0.5*math.pi)
             dx[1,0] = -sig*math.sin(sig*(L_left - self.H + 0.5*self.V)*2.0/self.V - 0.5*math.pi)
+            # Horizontal
+            # dx[1,0] = sig*math.cos(sig*(L_left - self.H + 0.5*self.V)*2.0/self.V - 0.5*math.pi)
+            # dx[0,0] = -sig*math.sin(sig*(L_left - self.H + 0.5*self.V)*2.0/self.V - 0.5*math.pi)
 
         else:
+            # Vertical
             dx[0,0] = 0.0
             dx[1,0] = -sig
+            # Horizontal
+            # dx[1,0] = 0.0
+            # dx[0,0] = -sig
         
         return dx
