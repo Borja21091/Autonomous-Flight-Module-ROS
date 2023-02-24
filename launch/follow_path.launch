@@ -26,6 +26,9 @@
         <!-- Path following algorithm -->
         <node pkg="defect_detect" name="follow_path" type="new_flight_control.py" />
 
+        <!-- Rosbag Record -->
+        <node pkg="rosbag" type="record" name="rosbag_record_all" args="record -a "/>
+
         <!-- Handle TFs >
         <node pkg="defect_detect" name="trajectory0_tf" type="handle_tf.py" /-->
 
