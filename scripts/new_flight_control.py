@@ -158,16 +158,16 @@ class pathPlanner():
         
         # Initialize Controllers
         # self.vPlanarCtrl = PID(0.01,0.1,0.025) # 2D velocity estimation + correction
-        self.vPlanarCtrl = PID(0.05,0.025,0.1) # 2D velocity estimation + correction
-        self.rotZCtrl = PID(0.05,0.05,0.0) # Z axis rotation control
+        self.vPlanarCtrl = PID(0.1,0.05,0.1) # 2D velocity estimation + correction
+        self.rotZCtrl = PID(0.1,0.1,0.0) # Z axis rotation control
         # self.vx3DCtrl = PID(-0.025,-0.1,0.0) # 3D forward velocity control
         self.vx3DCtrl = PID(-0.4,-0.1,0.0) # 3D forward velocity control
         self.refDist = 0.85 # 0.9 metres target distance drone - wall
         
         # Raster trajectory parameters
-        self.radius = 0.15
-        self.Nturns = 3.0
-        self.sideLength = 0.4
+        self.radius = 0.1
+        self.Nturns = 4.0
+        self.sideLength = 0.5
         self.firstTime = True
 
         # Initialize trajectory and project
@@ -204,7 +204,7 @@ class pathPlanner():
         # Calculate normal and D
         u_cross_v = np.array([[uy*vz-uz*vy], [uz*vx-ux*vz], [ux*vy-uy*vx]])
         point  = np.array(p0)
-        normal = np.array(u_cross_v); normal = normal/np.linalg.norm(normal)
+        normal = np.array(u_cross_v); normal = normal/np.linalg.norm(normal); normal = normal[:,0]
         d = -point.dot(normal)
         # Publish distance
         msgRange = Range()
@@ -221,7 +221,7 @@ class pathPlanner():
         
     def projectVec2Plane(self,pos3D,plane_normal):
         # Project 3D position to plane given by normal vector
-        projected_pos3D = pos3D[:,0] - np.multiply(np.dot(np.transpose(pos3D),plane_normal),plane_normal) / np.linalg.norm(plane_normal)**2
+        projected_pos3D = pos3D - np.multiply(np.dot(np.transpose(pos3D),plane_normal),plane_normal) / np.linalg.norm(plane_normal)**2
         
         return projected_pos3D
         
@@ -285,16 +285,14 @@ class pathPlanner():
             # rospy.loginfo('Normal vec: %s', self.n)
             # rospy.loginfo('Rot Matrix: %s', rot)
             # rospy.loginfo('Rotation Matrix: %s', rot)
-            r_drone = np.matmul(np.transpose(rot),self.rG)
-            # rospy.loginfo('r_drone: %s', r_drone)
+            r_drone = np.matmul(np.transpose(rot),self.rG[:,0])
             rProj = self.projectVec2Plane(r_drone,self.n)
-            # rospy.loginfo('Projected r_drone: %s', rProj)
             pos_1 = np.copy(pos)
             
             # Project velocities 2D --> 3D local
             # Linear Velocity
             velParam = np.empty([3,1])
-            velParam = self.proj.projVel(rProj)
+            velParam = self.proj.projVel(np.reshape(rProj,(3,1)))
             self.vel_output[0] = self.distance_control()
             self.vel_output[1] = velParam[1,0]
             self.vel_output[2] = velParam[2,0]
