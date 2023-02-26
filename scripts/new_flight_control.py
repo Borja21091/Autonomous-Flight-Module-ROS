@@ -187,7 +187,7 @@ class pathPlanner():
         # Generate trajectory
         self.proj.generate(axis1,axis2)
         
-    def fitNormalVec(self,rot):
+    def fitNormalVec(self):
         p0, p1, p2 = self.drone.sensor_mount.Points
         # rospy.loginfo('Distance Points: %s', self.drone.sensor_mount.Points)
         # Apply drone rotation --> p_i referenced at vicon_world
@@ -274,7 +274,7 @@ class pathPlanner():
             
             # Fit plane to Sensor points
             # rospy.loginfo('Rotation Matrix: %s', rot)
-            self.n,self.D = self.fitNormalVec(rot)
+            self.n,self.D = self.fitNormalVec()
             # rospy.loginfo('Plane normal: %s', self.n)
             
             # Project Drone 3D (base_link) position to 2D
