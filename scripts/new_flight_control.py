@@ -221,9 +221,7 @@ class pathPlanner():
         
     def projectVec2Plane(self,pos3D,plane_normal):
         # Project 3D position to plane given by normal vector
-        projected_pos3D = pos3D - np.multiply(np.dot(np.transpose(pos3D),plane_normal),plane_normal) / np.linalg.norm(plane_normal)**2
-        # 2D Position
-        # drone.pos2D += np.array([-projected_pos3D[1], projected_pos3D[2]])
+        projected_pos3D = pos3D[:,0] - np.multiply(np.dot(np.transpose(pos3D),plane_normal),plane_normal) / np.linalg.norm(plane_normal)**2
         
         return projected_pos3D
         
