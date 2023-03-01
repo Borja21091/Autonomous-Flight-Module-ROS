@@ -71,7 +71,8 @@ class SensorMount(object):
         r = r[0:3,0:3]
         # Transform 3D point
         point = np.array([sensor.point.x, sensor.point.y, sensor.point.z])
-        tPoint = np.matmul(r,point) + p
+        # tPoint = np.matmul(r,point) + p
+        tPoint = np.matmul(np.transpose(r),point - p)
         
         return tPoint
 
@@ -162,12 +163,12 @@ class pathPlanner():
         self.rotZCtrl = PID(0.1,0.1,0.0) # Z axis rotation control
         # self.vx3DCtrl = PID(-0.025,-0.1,0.0) # 3D forward velocity control
         self.vx3DCtrl = PID(-0.4,-0.1,0.0) # 3D forward velocity control
-        self.refDist = 0.85 # 0.9 metres target distance drone - wall
+        self.refDist = 1 # 0.9 metres target distance drone - wall
         
         # Raster trajectory parameters
-        self.radius = 0.1
+        self.radius = 0.2
         self.Nturns = 4.0
-        self.sideLength = 0.5
+        self.sideLength = 0.6
         self.firstTime = True
 
         # Initialize trajectory and project
@@ -230,7 +231,6 @@ class pathPlanner():
         msgTwist.twist.linear.y = vel[1] # Positive value --> To the left on vicon global
         msgTwist.twist.linear.z = vel[2] # Positive value --> Up in vicon global
         # Message angular velocities
-        # TODO probably need to change angular commands to compensate
         msgTwist.twist.angular.x = 0.0
         msgTwist.twist.angular.y = 0.0
         msgTwist.twist.angular.z = w
@@ -313,7 +313,7 @@ class pathPlanner():
                 # rospy.loginfo("Stopping Motion")
                     
             # Merge local velocities to Twist ROS msg
-            self.merge2Twist(self.drone.vel,self.vel_output_global,-self.w_z)
+            self.merge2Twist(self.drone.vel,self.vel_output_global,self.w_z)
             
             # Publish msg to /mavros/setpoint_velocity/cmd_vel
             self.drone.pub.publish(self.drone.vel)
