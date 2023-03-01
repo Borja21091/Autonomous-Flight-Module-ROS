@@ -206,10 +206,6 @@ class pathPlanner():
         point  = np.array(p0)
         normal = np.array(u_cross_v); normal = normal/np.linalg.norm(normal); normal = normal[:,0]
         d = -point.dot(normal)
-        # Publish distance
-        msgRange = Range()
-        msgRange.range = -d / normal[0]
-        self.drone.sensor_mount.distance.publish(msgRange)
         # Publish normal vector
         msgNormal = Point()
         msgNormal.x = normal[0]
@@ -242,6 +238,10 @@ class pathPlanner():
     def distance_control(self):
         # Horizontal distance
         distx = -self.D / self.n[0]
+        # Publish distance
+        msgRange = Range()
+        msgRange.range = distx
+        self.drone.sensor_mount.distance.publish(msgRange)
         # rospy.loginfo('Distance to wall: %s', distx)
         # Error distance
         e_dist = self.refDist - distx
