@@ -208,7 +208,7 @@ class pathPlanner():
         d = -point.dot(normal)
         # Publish distance
         msgRange = Range()
-        msgRange.range = d
+        msgRange.range = -d / normal[0]
         self.drone.sensor_mount.distance.publish(msgRange)
         # Publish normal vector
         msgNormal = Point()
