@@ -4,7 +4,7 @@
 ## Description
 This development includes a set of methods for autonomous surveying of walls using drones. Testing has been carried out in an indoor environment and, therefore, 3D position and orientation of the drone is captured using VICON cameras. Information about the drone's local environment is acquired using a set of three ranging sensors placed in the nose of the drone.
 
-[! img/SUI_Endurance_Complete.png]
+[! img/SUI_Endurance_Complete.png]()
 
 ## Key features of package
 - 2D path reconstruction in 3D space
