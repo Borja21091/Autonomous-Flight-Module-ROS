@@ -10,14 +10,19 @@ This development includes a set of methods for autonomous surveying of walls usi
 ![](img/SUI_Endurance_Complete.png)
 
 ### Steps followed for autonomy
-1. Retrieve UAV's global position & orientation: we use [vicon bridge](https://github.com/ethz-asl/vicon_bridge) to capture this information.
-2. Sensor range conversion to 3D point: transform distances to 3D points using a transformation matrices ([tf2](https://wiki.ros.org/tf2)). These points will be refered to the local reference frame of the drone.
+1. **Retrieve UAV's global position & orientation**: we use [vicon bridge](https://github.com/ethz-asl/vicon_bridge) to capture this information.
+2. **Sensor range conversion to 3D point**: transform distances to 3D points using a transformation matrices ([tf2](https://wiki.ros.org/tf2)). These points will be refered to the local reference frame fixed to the drone's body.
+3. **Local surface estimation**: a simple plane-fitting function characterises a plane by its normal vector and distance to a reference frame (local frame of the drone).
+4. **3D $\rightarrow$ 2D projection**: using the constraint that the drone will be perpendicularly facing the
+wall and knowing the parameters of the plane fitted to the local surface, we obtain the 2D projection of the drone’s 3D position.
+5. **Control signals calculation**: a set of three PID controllers generate the required velocities to achieve a smooth autonomous flight.
+6. **Publish target state**: the target velocities are published to the ROS network.
 
 ## Key features of package
-- 2D path reconstruction in 3D space
+- 2D position control of drone
 - Plane fitting to local surface
+- 2D path reconstruction in 3D space
 - Linear $(v_x,v_y,v_z)$ and rotational $(\theta_z)$ velocities generation
-- 3D position control of drone
 
 ## Hardware used for testing
 - [VICON Vero](https://www.vicon.com/hardware/cameras/vero/) positioning cameras
