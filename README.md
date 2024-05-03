@@ -1,5 +1,5 @@
 # Autonomous Flight Module ROS
-[ROS](http://www.ros.org/) package for autonomous flying of a drone based on local surface estimation.
+[ROS](http://www.ros.org/) package for autonomous flying of a drone based on local surface estimation and reconstruction of parameterised 2D trajectories in 3D space.
 
 > **Author**: Marin, Borja </br>
 > **Affiliation**: Heriot-Watt University </br>
