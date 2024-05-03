@@ -56,4 +56,4 @@ Packages like [MAVROS](https://github.com/mavlink/mavros), [vicon_bridge](https:
 5. Launch autonomous flying module `roslaunch <package_name> follow_path.launch`
 
 ## Citing
-If you find this work useful, please consider giving a star :star: and citation (paper is in the works) :t-rex::
+If you find this work useful, please consider giving a star :star: and citation (paper is in the works) :t-rex:
