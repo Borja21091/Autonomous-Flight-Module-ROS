@@ -21,7 +21,7 @@ wall and knowing the parameters of the plane fitted to the local surface, we obt
 ### ROS Nodes
 - **/mavros**: acts as the interface between the aircraft and the control command.
 - **/vicon**: publishes the drone’s global position and orientation. Since the drone cannot operate autonomously unless it has data for its global position, Vicon’s data is republished to mavros’ 
- `vision_pose/pose` and `/fake_gps/mocap/pose` topics through a parrot-like node (`vicon_listener`).
+ `vision_pose/pose` and `/fake_gps/mocap/pose` topics through a parrot-like node (`/vicon_listener`).
 - **/follow_path**: his node gathers all the data from the ranging sensors and drone state by subscribing to the respective topics, does the necessary projections and transformations from 3D space to 2D, executes the control sequences for every degree of freedom of the drone and generates the new velocity targets in order to track the trajectory provided by the user. These commands are published to mavros’ `/setpoint_velocity/cmd_vel` and sent to the onboard control unit.
 
 ![](img/rqt_graph.jpeg)
