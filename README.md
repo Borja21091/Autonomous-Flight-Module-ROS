@@ -1,13 +1,17 @@
 # Autonomous Flight Module ROS
 [ROS](http://www.ros.org/) package for autonomous flying of a drone based on local surface estimation.
 
-## Description
-This development includes a set of methods for autonomous surveying of walls using drones. Testing has been carried out in an indoor environment and, therefore, 3D position and orientation of the drone is captured using VICON cameras. Information about the drone's local environment is acquired using a set of three ranging sensors placed in the nose of the drone.
-
 > **Author**: Marin, Borja </br>
 > **Affiliation**: Heriot-Watt University </br>
 
+## Description
+This development includes a set of methods for autonomous surveying of walls using drones. Testing has been carried out in an indoor environment and, therefore, 3D position and orientation of the drone is captured using VICON cameras. Information about the drone's local environment is acquired using a set of three ranging sensors placed in the nose of the drone.
+
 ![](img/SUI_Endurance_Complete.png)
+
+### Steps followed for autonomy
+1. Retrieve UAV's global position & orientation: we use [vicon bridge](https://github.com/ethz-asl/vicon_bridge) to capture this information.
+2. Sensor range conversion to 3D point: transform distances to 3D points using a transformation matrices ([tf2](https://wiki.ros.org/tf2)). These points will be refered to the local reference frame of the drone.
 
 ## Key features of package
 - 2D path reconstruction in 3D space
