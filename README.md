@@ -22,7 +22,6 @@ wall and knowing the parameters of the plane fitted to the local surface, we obt
 - **/mavros**: acts as the interface between the aircraft and the control command.
 - **/vicon**: publishes the drone’s global position and orientation. Since the drone cannot operate autonomously unless it has data for its global position, Vicon’s data is republished to mavros’ 
  `vision_pose/pose` and `/fake_gps/mocap/pose` topics through a parrot-like node (`vicon_listener`).
-- **/camera**: handles anything related to capturing images. RGB images are published on `/color/image_raw/compressed` topic which can be subscribed by an external application to run image processing pipelines.
 - **/follow_path**: his node gathers all the data from the ranging sensors and drone state by subscribing to the respective topics, does the necessary projections and transformations from 3D space to 2D, executes the control sequences for every degree of freedom of the drone and generates the new velocity targets in order to track the trajectory provided by the user. These commands are published to mavros’ `/setpoint_velocity/cmd_vel` and sent to the onboard control unit.
 
 ![](img/rqt_graph.jpeg)
@@ -39,3 +38,22 @@ wall and knowing the parameters of the plane fitted to the local surface, we obt
 - [Pixhawk Cube Black](https://ardupilot.org/copter/docs/common-thecube-overview.html)
 - [Teraranger Evo 3m](https://www.terabee.com/shop/lidar-tof-range-finders/teraranger-evo-3m/)
 - [SUI Endurance](https://www.hiteccs.com/drones/products) drone
+
+## Instructions
+Packages like [MAVROS](https://github.com/mavlink/mavros), [vicon_bridge](https://github.com/ethz-asl/vicon_bridge), [tf2](https://wiki.ros.org/tf2), [serial](https://github.com/wjwwood/serial), [teraranger](https://github.com/Terabee/teraranger?tab=readme-ov-file) and [teraranger_array](https://github.com/Terabee/teraranger_array) are assumed to be installed.
+
+### New Package
+1. Create a ROS Package (instructions [here](https://wiki.ros.org/ROS/Tutorials/CreatingPackage))
+2. Move folders `launch` & `scripts` to the new package's folder
+3. Modify `follow_path.launch` to suit your needs (*i.e.* change the name of the package in line 27 to the one you just created `<package_name>`)
+4. Build package
+
+### Running the module
+1. Start ROS `roscore`
+2. Launch MAVROS `roslaunch mavros apm.launch` (if Pixhawk is not running Ardupilot firmware, make sure to use the corresponding launch file)
+3. Adjust signal rates `rosrun mavros mavsys rate --all 10`
+4. Send positioning data to drone `rosrun <package_name> vicon2drone.py`
+5. Launch autonomous flying module `roslaunch <package_name> follow_path.launch`
+
+## Citing
+If you find this work useful, please consider giving a star :star: and citation (paper is in the works) :t-rex::
