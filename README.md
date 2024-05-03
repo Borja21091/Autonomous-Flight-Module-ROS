@@ -25,7 +25,7 @@ wall and knowing the parameters of the plane fitted to the local surface, we obt
 - **/camera**: handles anything related to capturing images. RGB images are published on `/color/image_raw/compressed` topic which can be subscribed by an external application to run image processing pipelines.
 - **/follow_path**: his node gathers all the data from the ranging sensors and drone state by subscribing to the respective topics, does the necessary projections and transformations from 3D space to 2D, executes the control sequences for every degree of freedom of the drone and generates the new velocity targets in order to track the trajectory provided by the user. These commands are published to mavros’ `/setpoint_velocity/cmd_vel` and sent to the onboard control unit.
 
-![](img/rqt graph.png)
+![](img/rqt_graph.png)
 
 ## Key features of package
 - 2D position control of drone
