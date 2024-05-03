@@ -30,7 +30,7 @@ wall and knowing the parameters of the plane fitted to the local surface, we obt
 - 2D position control of drone
 - Plane fitting to local surface
 - 2D path reconstruction in 3D space
-- Linear $(v_x,v_y,v_z)$ and rotational $(\theta_z)$ velocities generation
+- Linear $(v_x,v_y,v_z)$ and rotational $(\Psi_z)$ velocities generation
 
 ## Hardware used for testing
 - [VICON Vero](https://www.vicon.com/hardware/cameras/vero/) positioning cameras
