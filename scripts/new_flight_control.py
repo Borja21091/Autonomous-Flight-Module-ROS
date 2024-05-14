@@ -127,7 +127,6 @@ class Drone(object):
         z = self.state.transform.rotation.z
         w = self.state.transform.rotation.w
         # Transform quaternion to matrix
-        # rot = quaternion_matrix([w,x,y,z])
         rot = quaternion_matrix([x,y,z,w])
         # Don't need full 4x4 matrix, 3x3 is good
         rot = rot[0:3,0:3]
@@ -158,12 +157,10 @@ class pathPlanner():
         self.R = np.zeros([3,3]) # Rotation matrix of plane-SensorMount
         
         # Initialize Controllers
-        # self.vPlanarCtrl = PID(0.01,0.1,0.025) # 2D velocity estimation + correction
         self.vPlanarCtrl = PID(0.1,0.05,0.1) # 2D velocity estimation + correction
         self.rotZCtrl = PID(0.1,0.1,0.0) # Z axis rotation control
-        # self.vx3DCtrl = PID(-0.025,-0.1,0.0) # 3D forward velocity control
         self.vx3DCtrl = PID(-0.4,-0.1,0.0) # 3D forward velocity control
-        self.refDist = 1 # 0.9 metres target distance drone - wall
+        self.refDist = 1 # 1 metre target distance drone - wall
         
         # Raster trajectory parameters
         self.radius = 0.2
@@ -190,11 +187,6 @@ class pathPlanner():
         
     def fitNormalVec(self):
         p0, p1, p2 = self.drone.sensor_mount.Points
-        # rospy.loginfo('Distance Points: %s', self.drone.sensor_mount.Points)
-        # Apply drone rotation --> p_i referenced at vicon_world
-        # p0 = np.matmul(rot,p0)
-        # p1 = np.matmul(rot,p1)
-        # p2 = np.matmul(rot,p2)
         # Extract components
         x0, y0, z0 = p0
         x1, y1, z1 = p1
@@ -242,7 +234,6 @@ class pathPlanner():
         msgRange = Range()
         msgRange.range = distx
         self.drone.sensor_mount.distance.publish(msgRange)
-        # rospy.loginfo('Distance to wall: %s', distx)
         # Error distance
         e_dist = self.refDist - distx
         # Estimate velocity PID
@@ -273,18 +264,13 @@ class pathPlanner():
             self.drone.sensor_mount.calculate_distance()
             
             # Fit plane to Sensor points
-            # rospy.loginfo('Rotation Matrix: %s', rot)
             self.n,self.D = self.fitNormalVec()
-            # rospy.loginfo('Plane normal: %s', self.n)
             
             # Project Drone 3D (base_link) position to 2D
             self.rG = pos - pos_1
             if self.firstTime:
                 self.rG = np.zeros([3,1])
                 self.firstTime = False
-            # rospy.loginfo('Normal vec: %s', self.n)
-            # rospy.loginfo('Rot Matrix: %s', rot)
-            # rospy.loginfo('Rotation Matrix: %s', rot)
             r_drone = np.matmul(np.transpose(rot),self.rG[:,0])
             rProj = self.projectVec2Plane(r_drone,self.n)
             pos_1 = np.copy(pos)
@@ -296,21 +282,17 @@ class pathPlanner():
             self.vel_output[0] = self.distance_control()
             self.vel_output[1] = velParam[1,0]
             self.vel_output[2] = velParam[2,0]
-            # rospy.loginfo('Target Local Vel: %s', self.vel_output)
             # cmd_vel commands NEED to be in Vicon Global frame
             self.vel_output_global = np.matmul(rot,self.vel_output)
             self.vel_output_global = self.drone.v_max*self.vel_output_global / np.linalg.norm(self.vel_output_global)
-            # rospy.loginfo('Target Global Vel: %s', self.vel_output_global)
             # Angular Velocity
             self.w_z = self.rotation_control()
             self.w_z = min(max(-self.drone.w_max, self.w_z),self.drone.w_max)
-            # rospy.loginfo('Rotation target: %s', self.w_z)
             if self.proj.t_i > self.proj.t_end:
                 self.vel_output_global[0] = 0.0
                 self.vel_output_global[1] = 0.0
                 self.vel_output_global[2] = 0.0
                 self.w_z = 0.0
-                # rospy.loginfo("Stopping Motion")
                     
             # Merge local velocities to Twist ROS msg
             self.merge2Twist(self.drone.vel,self.vel_output_global,self.w_z)
