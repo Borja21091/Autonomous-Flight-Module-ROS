@@ -131,18 +131,6 @@ class project_trajectory(object):
         # Normalization to have constant tangential velocity of C_v
         if norm(vLocal) > self.Cv:
             vLocal *= self.Cv / norm(vLocal)
-        
-        """# Transform global to local (vicon drone frame) velocity
-        # vLocal = np.empty([2,1])
-        vLocal = np.matmul(rot,vGlobal[0:3])
-        # vLocal = np.matmul(np.transpose(rot),vGlobal[0:3]) # Original code
-
-        # Norm of the planar velocity
-        vLocal_norm = np.linalg.norm(vLocal)
-
-        # Normalization to have constant tangential velocity of C_v
-        if vLocal_norm > 0.0:
-            vLocal *= self.Cv/vLocal_norm"""
 
         return vLocal
 
