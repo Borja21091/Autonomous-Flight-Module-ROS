@@ -50,11 +50,6 @@ class project_trajectory(object):
         self.t = 0.01
         # Check if axis span a 2 dimensional space
         provMat = np.matmul(np.transpose(self.inv_projection_matrix),self.inv_projection_matrix)
-        
-        # DID NOT KNOW HOW TO TRANSCRIPT THIS!
-        # p, l, u = lu(provMat) # LU decomposition
-        # if(lu_decomp.isInvertible())
-
         # Get projection matrix
         self.projection_matrix = np.matmul(inv(provMat),np.transpose(self.inv_projection_matrix))
         
