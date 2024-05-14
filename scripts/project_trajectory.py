@@ -66,21 +66,16 @@ class project_trajectory(object):
         self.x_proj_ref = np.matmul(self.projection_matrix,pos0)
 
     def projVel(self,pos):
-        # Initialization
         # Number of iteration for gradient descent
         count = 0
         # Gradient of the function to be minimised
         DC = 1.0
         # Gradient descend rate
         alpha = 0.3
-
         # Project global drone prosition and subtract reference point (origin of parametric trajectory)
         self.xProj += np.matmul(self.projection_matrix,pos)
-        # rospy.loginfo('2D Position: %s', self.xProj)
-        
         # Publish 2D projected position
         self.publish_dronePos_2D(self.xProj)
-
         # Loop to find closest point in trajectory to real projected position
         xTraj = np.empty([2,1])
         dxTraj = np.empty([2,1])
@@ -101,28 +96,22 @@ class project_trajectory(object):
             if self.t < 0.0:
                 # Make t always positive
                 self.t = -self.t
-        # rospy.loginfo('2D Target: %s', xTraj)
         # Accumulation of position error
         if norm(errorProj) < 0.05:
             # Reset
             self.sErrorProj = np.zeros([2,1])
         else:
             self.sErrorProj += errorProj
-            
         # Update parameter t global
         self.t_i = self.t
         self.projection = self.xProj
         self.trajectory = xTraj
-
         # Compute planar velocity
         vProj = np.empty([2,1])
-        vProj = self.KD*dxTraj + self.KP*errorProj + self.KI*self.sErrorProj
-        # rospy.loginfo('2D Taget Vel: %s', vProj)
-        
+        vProj = self.KD*dxTraj + self.KP*errorProj + self.KI*self.sErrorProj        
         # Transform planar velocity to drone local frame space
         vLocal = np.empty([3,1])
-        vLocal = np.matmul(self.inv_projection_matrix,vProj)
-        
+        vLocal = np.matmul(self.inv_projection_matrix,vProj)        
         # Normalization to have constant tangential velocity of C_v
         if norm(vLocal) > self.Cv:
             vLocal *= self.Cv / norm(vLocal)
@@ -140,13 +129,10 @@ class raster(object):
         self.V = self.turnWidth # Vertical length
         self.Lc = self.sideLength + (0.5*math.pi - 1.0)*self.V #Length of a cycle
         self.SIG = np.array([-1, 1])
-
         # Max value of parameter
         self.T = self.turns_*self.Lc
-
         # Publisher
         self.curvature_pub = rospy.Publisher('parametric_curve', Path, queue_size = 10)
-        
         # Publish 2D trajectory
         self.publish_projection_2D()
         
@@ -170,14 +156,12 @@ class raster(object):
             msgPoint.pose.orientation.w = 1
             msgPath.poses.append(msgPoint)
             n = n + 1
-
         self.curvature_pub.publish(msgPath)
 
     def pos(self,t):
         # Avoid negative parameter
         if t < 0.0:
             t = -t
-
         # Number of cycles
         N_c = int(t/self.Lc)
         # Remaining length
@@ -187,7 +171,6 @@ class raster(object):
         sig = self.SIG[ind]
         # Choose line of trajectory
         x = np.empty([2, 1])
-
         # Straight direction 1
         if L_left < (self.H - 0.5*self.V):
             # Vertical
@@ -196,7 +179,6 @@ class raster(object):
             # Horizontal
             # x[1,0] = N_c*self.V
             # x[0,0] = sig*L_left
-
         # Turning
         elif L_left < (self.H + 0.5*(math.pi - 1.0)*self.V):
             # Vertical
@@ -205,7 +187,6 @@ class raster(object):
             # Horizontal
             # x[1,0] = (N_c + 0.5)*self.V + 0.5*self.V*math.sin(sig*(L_left - self.H + 0.5*self.V)*2.0/self.V - 0.5*math.pi)
             # x[0,0] = sig*(self.H - 0.5*self.V) + 0.5*self.V*math.cos(sig*(L_left - self.H + 0.5*self.V)*2.0/self.V - 0.5*math.pi)
-
         # Straight direction 2
         else:
             # Vertical
@@ -221,7 +202,6 @@ class raster(object):
         # Avoid negative parameter
         if t < 0.0:
             t = -t
-
         # Number of cycles
         N_c = int(t/self.Lc)
         # Remaining length
@@ -231,7 +211,6 @@ class raster(object):
         sig = self.SIG[ind]
         # Choose line of trajectory
         dx = np.empty([2, 1])
-
         if L_left < (self.H - 0.5*self.V):
             # Vertical
             dx[0,0] = 0.0
@@ -239,7 +218,6 @@ class raster(object):
             # Horizontal
             # dx[1,0] = 0.0
             # dx[0,0] = sig
-
         elif L_left < (self.H + 0.5*(math.pi - 1.0)*self.V):
             # Vertical
             dx[0,0] = sig*math.cos(sig*(L_left - self.H + 0.5*self.V)*2.0/self.V - 0.5*math.pi)
@@ -247,7 +225,6 @@ class raster(object):
             # Horizontal
             # dx[1,0] = sig*math.cos(sig*(L_left - self.H + 0.5*self.V)*2.0/self.V - 0.5*math.pi)
             # dx[0,0] = -sig*math.sin(sig*(L_left - self.H + 0.5*self.V)*2.0/self.V - 0.5*math.pi)
-
         else:
             # Vertical
             dx[0,0] = 0.0
